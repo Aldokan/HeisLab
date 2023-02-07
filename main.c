@@ -8,12 +8,18 @@
 #include "control.h"
 #include "status.h"
 
-
-
+void start(struct status *s) {
+    while (elevio_floorSensor()==-1)
+    {
+        elevio_motorDirection(DIRN_DOWN);
+    }
+    s->current_floor=elevio_floorSensor();
+}
 
 int main(){
     elevio_init();
-    
+    struct status *s;
+    start(s);
     printf("=== Example Program ===\n");
     printf("Press the stop button on the elevator panel to exit\n");
 
