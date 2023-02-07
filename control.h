@@ -6,6 +6,6 @@ struct control {
     struct status *status;
 };
 
-void move(){};
-void stop(){};
+void move(struct control c);
+void stop(struct control c);
 
