@@ -19,5 +19,6 @@ void pretty_print(struct status* s) {
     printf("| Emergency stop: %s \n", s->bool_stop? "on": "off");
     printf("| Obstruction present: %s \n", s->bool_obstruction? "true": "false");
     printf("| Door status: %s \n", s->door_status==OPEN? "open": "closed");
+    printf("| Is idle: %s \n", s->bool_start? "yes": "no");
     printf("------------------------\n");
 }

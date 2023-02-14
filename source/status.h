@@ -10,6 +10,7 @@ struct status
     int button_light[4];
     int bool_stop;
     int bool_obstruction;
+    int bool_start;
     enum door{OPEN, CLOSED} door_status;
 };
 

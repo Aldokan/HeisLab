@@ -26,15 +26,36 @@ void start(struct status *s) {
 
     s->bool_stop = false;
     s->bool_obstruction = false;
-    s->door_status = CLOSED; 
+    s->door_status = CLOSED;
+    s->bool_start = 0; 
 }
 
 int main(){
     elevio_init();
     struct status* s;
+    struct order_line* queue = (struct order_line*) malloc(sizeof(struct order_line));
+    queue->next = NULL;
+    struct order* ord = (struct order*) malloc(sizeof(int) + sizeof(enum source));
+    queue->data = ord;
+    s->bool_start = 1;
     start(s);
     pretty_print(s);
+    while (s->bool_start != 1) {
+        // Loop through all buttons and add order based on where it's from.
+        for (int floor_nr = 0; floor_nr < N_FLOORS; floor_nr++) {
+            for (enum source btn_type = BUTTON_HALL_UP; btn_type <= BUTTON_CAB; btn_type++) {
+                if (elevio_callButton(floor_nr, btn_type) == 1) {
+                    ord->to_floor = floor_nr;
+                    ord->src = (btn_type == BUTTON_CAB? inside_elevator: outside_elevator);
+                    add_order(&queue, ord, s);
+                }
+            }
+        }
+    }
+    free(ord);
+    free(queue);
     
+
     // printf("=== Example Program ===\n");
     // printf("Press the stop button on the elevator panel to exit\n");
 
