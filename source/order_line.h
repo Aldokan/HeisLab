@@ -2,9 +2,11 @@
 #include "status.h"
 
 struct order_line {
-    struct order *orders[8]; //linked list er nok mer hensiktsmessig for å få en dynamisk array
-    struct status *status;
+    struct node {
+        struct order *data;
+        struct node *next;
+    };
 };
 
-void add_order(struct order_line o);
-void remove_order(struct order_line o);
+void add_order(struct order_line *o, struct node** head_ref, struct order *new_data, struct status *s);
+void remove_order(struct order_line o, struct node** head_ref, int key);
