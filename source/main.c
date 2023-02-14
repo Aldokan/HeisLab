@@ -23,7 +23,7 @@ void start(struct status *s) {
 
     for (int i = 0; i < sizeof(s->button_light) / sizeof(int); i++)
         s->button_light[i] = 0;
-        
+
     s->bool_stop = false;
     s->bool_obstruction = false;
     s->door_status = CLOSED; 
@@ -34,6 +34,7 @@ int main(){
     struct status* s;
     start(s);
     pretty_print(s);
+    
     // printf("=== Example Program ===\n");
     // printf("Press the stop button on the elevator panel to exit\n");
 
