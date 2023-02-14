@@ -32,7 +32,7 @@ void start(struct status *s) {
 
 int main(){
     elevio_init();
-    struct status* s;
+    struct status* s = (struct status*) malloc(sizeof(struct status));
     struct order_line* queue = (struct order_line*) malloc(sizeof(struct order_line));
     queue->next = NULL;
     struct order* ord = (struct order*) malloc(sizeof(int) + sizeof(enum source));

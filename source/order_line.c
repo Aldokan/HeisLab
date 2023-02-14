@@ -3,6 +3,7 @@
 void add_order(struct order_line** head_ref, struct order *new_data, struct status *s) {
     struct order_line* new_order_line = (struct order_line*) malloc(sizeof(struct order_line));
     struct order_line *last = *head_ref;
+    new_order_line->data = (struct order*) malloc(sizeof(struct order));
     new_order_line->data->src  = new_data->src;
     new_order_line->data->to_floor  = new_data->to_floor;
     new_order_line->next = NULL;
