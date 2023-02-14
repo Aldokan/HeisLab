@@ -3,10 +3,7 @@
 #include <signal.h>
 #include <time.h>
 #include "driver/elevio.h"
-#include "order.h"
-#include "order_line.h"
 #include "control.h"
-#include "status.h"
 
 void start(struct status *s) {
     while (elevio_floorSensor()==-1)

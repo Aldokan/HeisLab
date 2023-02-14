@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <elevio.h>
+#include "driver/elevio.h"
 
 struct status
 {

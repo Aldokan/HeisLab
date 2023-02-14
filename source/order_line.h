@@ -6,5 +6,5 @@ struct order_line {
     struct status *status;
 };
 
-void add(struct order_line o){};
-void remove(struct order_line o){};
+void add_order(struct order_line o);
+void remove_order(struct order_line o);

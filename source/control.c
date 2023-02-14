@@ -1,5 +1,4 @@
 #include "control.h"
-#include "elevio.h"
 
 void move(struct control c){
     
