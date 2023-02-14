@@ -10,7 +10,9 @@ struct status
     int button_light[4];
     int bool_stop;
     int bool_obstruction;
-    enum door{open, closed};
+    enum door{OPEN, CLOSED} door_status;
 };
+
+void pretty_print(struct status* status);
 
 
