@@ -1,4 +1,3 @@
-*.con
 SimElevatorServer
 build/
 elevator
