@@ -35,3 +35,15 @@ void remove_order(struct order_line** head_ref, int key) {
     free(temp);
 }
 
+void clear_line(struct order_line** head_ref) {
+    struct order_line* current = *head_ref;
+    struct order_line* next;
+
+    while (current != NULL) {
+        next = current->next;
+        free(current);
+        current = next;
+    }
+
+    *head_ref = NULL;
+}

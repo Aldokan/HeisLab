@@ -8,3 +8,4 @@ struct order_line {
 
 void add_order(struct order_line** head_ref, struct order *new_data, struct status *s);
 void remove_order(struct order_line** head_ref, int key);
+void clear_line(struct order_line** head_ref);
