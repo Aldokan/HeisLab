@@ -47,3 +47,36 @@ void clear_line(struct order_line** head_ref) {
 
     *head_ref = NULL;
 }
+
+void sort_line(struct order_line** head_ref, struct status *s) {
+    struct order_line *current, *closest, *prev, *closest_prev;
+
+    //traverse linked list
+    for (current = *head_ref; current !=NULL; current=current->next)
+    {
+        closest=current;
+        closest_prev=prev;
+
+        //Find the node with the closest order
+        for (struct order_line *queue = current->next; queue!=NULL; queue=queue->next)
+        {
+            if (abs((queue->data->to_floor) - (s->current_floor)) < abs((closest->data) - (s->current_floor)))
+            {
+                closest=queue;
+                closest_prev=prev;
+            }
+            
+        }
+        //Move the node with the closest distance to the front
+        if (closest!=current)
+        {
+            closest_prev->next=closest->next;
+            closest->next = *head_ref;
+            *head_ref = closest;
+        }
+
+        prev=current;
+        
+    }
+    
+}

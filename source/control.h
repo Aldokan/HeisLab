@@ -5,6 +5,6 @@ struct control {
     struct status *status;
 };
 
-void move(struct control c);
+void move(struct control c, MotorDirection d);
 void stop(struct control c);
 
