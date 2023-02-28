@@ -27,21 +27,26 @@ void start(struct status *s) {
     for (int i = 0; i < sizeof(s->button_light) / sizeof(int); i++)
         s->button_light[i] = 0;
 
+    for (int i = 0; i < sizeof(s->button_status) / sizeof(s->button_status[0]); i++)
+        for (int j = 0; j < sizeof(s->button_status[0]) / sizeof(int); j++)
+            s->button_status[i][j] = 0;
+
     s->bool_stop = false;
     s->bool_obstruction = false;
     s->door_status = CLOSED;
     s->bool_start = 0; 
-    //elevio_doorOpenLamp(0);
+    //elevio_doorOpenLamp(0); 
 }
 
-void take_order(struct order_line* queue, struct status* s, struct order* ord) {
+void take_order(struct order_line** queue, struct status* s, struct order* ord) {
     for (int floor_nr = 0; floor_nr < N_FLOORS; floor_nr++) {
             for (enum source btn_type = BUTTON_HALL_UP; btn_type <= BUTTON_CAB; btn_type++) {
-                if (elevio_callButton(floor_nr, btn_type)) {
+                if (elevio_callButton(floor_nr, btn_type) && s->button_status[btn_type][floor_nr] == 0) {
                     ord->to_floor = floor_nr;
                     ord->src = (btn_type == BUTTON_CAB? inside_elevator: outside_elevator);
-                    add_order(&queue, ord, s);
+                    add_order(queue, ord, s);
                     s->button_light[floor_nr] = 1;
+                    s->button_status[btn_type][floor_nr] = 1;
                 }
             }
         }
@@ -53,56 +58,37 @@ int main(){
     struct order_line* queue = (struct order_line*) malloc(sizeof(struct order_line));
     queue->next = NULL;
     struct order* ord = (struct order*) malloc(sizeof(int) + sizeof(enum source));
-    struct control c = {queue, s};
-    queue->data = ord;
+    struct control* c = (struct control*) malloc(sizeof(struct control));
+    c->order_line = &queue;
+    c->status = s;
+    queue->data = NULL;
     s->bool_start = 1;
     start(s);
     pretty_print(s);
     while (s->bool_start != 1) { // O2 - main loop won't run until elevator has come to defined state.
-        printf("%d\n", elevio_stopButton());
         // L3 and L4 - floor lights
         if (s->current_floor != -1) {
             elevio_floorIndicator(s->current_floor);
         }
 
         // Loop through all buttons and add order based on which of them are pressed.
-        for (int floor_nr = 0; floor_nr < N_FLOORS; floor_nr++) {
-            for (enum source btn_type = BUTTON_HALL_UP; btn_type <= BUTTON_CAB; btn_type++) {
-                if (elevio_callButton(floor_nr, btn_type)) {
-                    ord->to_floor = floor_nr;
-                    ord->src = (btn_type == BUTTON_CAB? inside_elevator: outside_elevator);
-                    add_order(&queue, ord, s);
-                    s->button_light[floor_nr] = 1;
-                }
-            }
-        }
-        while (queue->next!=NULL)
-        {   
-            sort_line(&queue, s); //gjør ikke noe interessant her
-            //printf("source: %u \n",queue->data->src);
-            //printf("to_floor: %d \n",queue->data->to_floor);
-            while (queue->data->to_floor > s->current_floor)
+        take_order(&queue, s, ord);
+
+        if (queue->data!=NULL)
+        { 
+            sort_line(&queue, s);
+            if (queue->data->to_floor > s->current_floor)
             {
                 move(c,DIRN_UP);
-                take_order(queue, s, ord);
             }
-            while (queue->data->to_floor < s->current_floor)
+            if (queue->data->to_floor < s->current_floor)
             {
                 move(c,DIRN_DOWN);
-                take_order(queue, s, ord);
             }
-            stop(c);
-            //elevio_doorOpenLamp(1);
-            //sleep(3); //sleep funker ikke
-            //elevio_doorOpenLamp(0);
-            queue=queue->next;
+            if (s->current_floor == queue->data->to_floor) {
+                stop(c);
+            }
         }
-        while (queue->next!=NULL)
-        {
-            remove_order(&queue, queue->data->to_floor);
-        }
-        
-        
 
         if (elevio_stopButton()) {
             elevio_motorDirection(DIRN_STOP); // S4 - elevator will stop immediately upon pressing the stop button
@@ -116,7 +102,7 @@ int main(){
 
             while(elevio_stopButton()) { } // S6 - all attempts to order (or do anything else) are ignored while the stop button is held
             elevio_stopLamp(0); // L6.2 - the stop button light will turn off immediately upon releasing the stop button
-            nanosleep(&(struct timespec){0, 3*1000*1000*1000}, NULL); //warning: integer overflow in expression of type ‘int’ results in ‘-1294967296’ [-Woverflow]
+            nanosleep(&(struct timespec){0, (long)3*1000*1000*1000}, NULL);
             s->bool_stop = false;
             elevio_doorOpenLamp(0); // D3.2 - the door will close three seconds after the release of the stop button
         }
