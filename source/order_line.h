@@ -11,3 +11,4 @@ void remove_order(struct order_line** head_ref, int key);
 void clear_line(struct order_line** head_ref);
 
 void sort_line(struct order_line** head_ref, struct status *s);
+void pretty_print_line(struct order_line** head_ref);

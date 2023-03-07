@@ -6,6 +6,7 @@ void add_order(struct order_line** head_ref, struct order *new_data, struct stat
     new_order_line->data = (struct order*) malloc(sizeof(struct order));
     new_order_line->data->src  = new_data->src;
     new_order_line->data->to_floor  = new_data->to_floor;
+    new_order_line->data->dir = new_data->dir;
     new_order_line->next = NULL;
     if ((*head_ref)->data == NULL)
     {
@@ -44,6 +45,10 @@ void clear_line(struct order_line** head_ref) {
     struct order_line* next;
 
     while (current != NULL) {
+        if (current->next == NULL) {
+            current->data = NULL;
+            return;
+        }
         next = current->next;
         free(current);
         current = next;
@@ -53,37 +58,50 @@ void clear_line(struct order_line** head_ref) {
 }
 
 void sort_line(struct order_line** head_ref, struct status *s) {
-    struct order_line *current = (struct order_line*) malloc(sizeof(struct order_line));
+    struct order_line *current = *head_ref;
     struct order_line *closest = (struct order_line*) malloc(sizeof(struct order_line));
-    struct order_line *prev = (struct order_line*) malloc(sizeof(struct order_line));
-    struct order_line *closest_prev = (struct order_line*) malloc(sizeof(struct order_line));
-
+    struct order* swap;
     //traverse linked list
-    for (current = *head_ref; current !=NULL; current=(current->next))
-    {
-        closest=current;
-        closest_prev=prev;
-
-        //Find the node with the closest order
-        for (struct order_line *queue = (current->next); queue!=NULL; queue=(queue->next))
-        {
-            if (abs((queue->data->to_floor) - (s->current_floor)) < abs((closest->data->to_floor) - (s->current_floor)))
-            {
-                closest=queue;
-                closest_prev=prev;
+    while (current != NULL) {
+        closest = current;
+        while (closest->next != NULL) {
+            if (abs((closest->data->to_floor) - (s->current_floor)) > abs((closest->next->data->to_floor) - (s->current_floor))) {
+                swap = closest->data;
+                closest->data = closest->next->data;
+                closest->next->data = swap;
             }
-            
+            closest = closest->next;
         }
-        //Move the node with the closest distance to the front
-        if (closest!=current)
-        {
-            closest_prev->next=closest->next;
-            closest->next = *head_ref;
-            *head_ref = closest;
-        }
-
-        prev=current;
-        
+        current = current->next;
     }
-    
+    enum direction dir;
+    if (closest->data->dir == irrelevant) {
+        dir = ((closest->data->to_floor) - (s->current_floor)) < 0? down: up;
+    } else {
+        dir = closest->data->dir;
+    }
+    while (current != NULL) {
+        closest = current;
+        while (closest->next != NULL) {
+            if (closest->data->dir != dir) {
+                swap = closest->data;
+                closest->data = closest->next->data;
+                closest->next->data = swap;
+            }
+            closest = closest->next;
+        }
+        current = current->next;
+    } 
+     
+}
+
+void pretty_print_line(struct order_line** head_ref) {
+    struct order_line* current = (struct order_line*) malloc(sizeof(struct order_line));
+    int i = 1;
+    printf("--------------------------------------\n");
+    for (current = *head_ref; current != NULL; current=(current->next)) {
+        printf("%d: To floor: %d    Source of order: %s\n", i, current->data->to_floor, (current->data->src == outside_elevator? "outside": "inside"));
+        i++;
+    }
+    printf("--------------------------------------\n");
 }

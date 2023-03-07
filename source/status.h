@@ -16,6 +16,6 @@ struct status
     enum door{OPEN, CLOSED} door_status;
 };
 
-void pretty_print(struct status* status);
+void pretty_print_status(struct status* status);
 
 

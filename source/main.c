@@ -6,7 +6,6 @@
 #include "driver/elevio.h"
 #include "control.h"
 
-
 #define true 1
 #define false 0
 
@@ -44,6 +43,11 @@ void take_order(struct order_line** queue, struct status* s, struct order* ord) 
                 if (elevio_callButton(floor_nr, btn_type) && s->button_status[btn_type][floor_nr] == 0) {
                     ord->to_floor = floor_nr;
                     ord->src = (btn_type == BUTTON_CAB? inside_elevator: outside_elevator);
+                    if (ord->src == outside_elevator) {
+                        ord->dir = (btn_type == BUTTON_HALL_UP? up: down);
+                    } else {
+                        ord->dir = irrelevant;
+                    }
                     add_order(queue, ord, s);
                     s->button_light[floor_nr] = 1;
                     s->button_status[btn_type][floor_nr] = 1;
@@ -57,59 +61,68 @@ int main(){
     struct status* s = (struct status*) malloc(sizeof(struct status));
     struct order_line* queue = (struct order_line*) malloc(sizeof(struct order_line));
     queue->next = NULL;
-    struct order* ord = (struct order*) malloc(sizeof(int) + sizeof(enum source));
+    struct order* ord = (struct order*) malloc(sizeof(int) + sizeof(enum source) + sizeof(enum direction));
     struct control* c = (struct control*) malloc(sizeof(struct control));
     c->order_line = &queue;
-    c->status = s;
+    c->arrival_timer = 0; c->obstruction_timer = 0; c->stop_timer = 0;
     queue->data = NULL;
-    s->bool_start = 1;
-    start(s);
-    pretty_print(s);
-    while (s->bool_start != 1) { // O2 - main loop won't run until elevator has come to defined state.
+    c->status = s;
+    c->status->bool_start = true;
+    start(c->status);
+    while (c->status->bool_start != 1) { // O2 - main loop won't run until elevator has come to defined state.
+        system("clear");
+        pretty_print_status(c->status);
+        if (queue->data != NULL) {
+            pretty_print_line(&queue);
+        } else {
+            printf("No orders!\n");
+        }
         // L3 and L4 - floor lights
-        if (s->current_floor != -1) {
-            elevio_floorIndicator(s->current_floor);
+        if (c->status->current_floor != -1) {
+            elevio_floorIndicator(c->status->current_floor);
         }
 
         // Loop through all buttons and add order based on which of them are pressed.
-        take_order(&queue, s, ord);
+        take_order(&queue, c->status, ord);
 
-        if (queue->data!=NULL)
-        { 
-            sort_line(&queue, s);
-            if (queue->data->to_floor > s->current_floor)
-            {
+        if (queue->data!=NULL) { 
+            sort_line(&queue, c->status);
+            if (queue->data->to_floor > c->status->current_floor && c->status->door_status == CLOSED) {
                 move(c,DIRN_UP);
             }
-            if (queue->data->to_floor < s->current_floor)
-            {
+            if (queue->data->to_floor < c->status->current_floor && c->status->door_status == CLOSED) {
                 move(c,DIRN_DOWN);
             }
-            if (s->current_floor == queue->data->to_floor) {
-                stop(c);
+            if (c->status->current_floor == queue->data->to_floor) {
+                stop_in_floor(c);
             }
         }
 
         if (elevio_stopButton()) {
-            elevio_motorDirection(DIRN_STOP); // S4 - elevator will stop immediately upon pressing the stop button
-            elevio_stopLamp(1); // L6.1 - the stop button light will light up immediately upon pressing the stop button
-            clear_line(&queue); // S5 - all non-processed orders will be removed upon pressing the stop button
+            emergency_stop(queue, s, c);
+        }
 
-            if (elevio_floorSensor() != -1) {
-                elevio_doorOpenLamp(1); // D3.1 - the door will open if the elevator is not between floors when stop button is pressed
+        if (c->status->door_status == OPEN && elevio_obstruction()) {
+            c->status->bool_obstruction = true;
+            c->obstruction_timer = 0;
+        } else if (!elevio_obstruction() && c->status->bool_obstruction) {
+            //c->status->bool_obstruction = false;
+            if (c->obstruction_timer == 0) {
+                start_timer(c, t_obstruction);
             }
-            s->bool_stop = true;
+        }
 
-            while(elevio_stopButton()) { } // S6 - all attempts to order (or do anything else) are ignored while the stop button is held
-            elevio_stopLamp(0); // L6.2 - the stop button light will turn off immediately upon releasing the stop button
-            nanosleep(&(struct timespec){0, (long)3*1000*1000*1000}, NULL);
-            s->bool_stop = false;
-            elevio_doorOpenLamp(0); // D3.2 - the door will close three seconds after the release of the stop button
+        if (timer_is_done(c, t_obstruction)) {
+            c->status->bool_obstruction = false;
+            c->obstruction_timer = 0;
+            elevio_doorOpenLamp(0);
+            c->status->door_status = CLOSED;
         }
 
     }
     free(ord);
     free(s);
+    free(c);
     clear_line(&queue);
     return 0;
 }

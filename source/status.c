@@ -1,6 +1,6 @@
 #include "status.h"
 
-void pretty_print(struct status* s) {
+void pretty_print_status(struct status* s) {
     printf("------------------------\n");
     printf("| Movement: %s \n", s->bool_movement? "true": "false");
     printf("| Current floor: %d \n", s->current_floor);
