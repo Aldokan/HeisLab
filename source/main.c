@@ -101,7 +101,7 @@ int main(){
                 // R3 - no further calibration is needed after elevator has come to a defined state  
                 if (elevio_floorSensor() != -1) {
                     stop_in_floor(c);
-                } else if (c->status->last_direction < 0) {
+                } else if (c->status->dir_before_stop < 0) {
                     move(c, DIRN_UP);
                 } else {
                     move(c, DIRN_DOWN);

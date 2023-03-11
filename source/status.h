@@ -12,6 +12,7 @@ struct status {
     int bool_obstruction;
     int bool_start;
     MotorDirection last_direction;
+    MotorDirection dir_before_stop;
     enum door{OPEN, CLOSED} door_status;
 };
 

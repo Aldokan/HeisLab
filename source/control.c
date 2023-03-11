@@ -49,6 +49,7 @@ void button_lights(struct control* c) {
 
 void emergency_stop(struct order_line** queue, struct control* c) {
     elevio_motorDirection(DIRN_STOP); // S4 - elevator will stop immediately upon pressing the stop button
+    c->status->dir_before_stop = c->status->last_direction;
     c->status->bool_movement = false;
     elevio_stopLamp(1); // L6.1 - the stop button light will light up immediately upon pressing the stop button
     clear_line(queue); // S5 - all non-processed orders will be removed upon pressing the stop button
