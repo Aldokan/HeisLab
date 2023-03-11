@@ -19,42 +19,44 @@ void add_order(struct order_line** head_ref, struct order *new_data, struct stat
     last->next = new_order_line;   
 };
 
-void remove_order(struct order_line** head_ref, int key) {
-    struct order_line* temp = *head_ref, *prev;
-    if (temp != NULL && temp->data->to_floor == key) {
-        if (temp->next==NULL) {
-            temp->data=NULL;
-            return;
-        }
-        *head_ref = temp->next; 
+void remove_order(struct order_line** head_ref, int floor) {
+    struct order_line* temp;
+    while (*head_ref != NULL && (*head_ref)->data->to_floor == floor) {
+        temp = *head_ref;
+        *head_ref = (*head_ref)->next;
         free(temp);
-        return;
     }
-    while (temp != NULL && temp->data->to_floor != key) {
-        prev = temp;
-        temp = temp->next;
+
+    struct order_line* current = *head_ref;
+    while (current != NULL) {
+        if (current->next != NULL && current->next->data->to_floor == floor) {
+            temp = current->next;
+            current->next = temp->next;
+            free(temp);
+        } else {
+            current = current->next;
+        }
     }
-    if (temp == NULL)
-        return;
-    prev->next = temp->next;
-    free(temp);
+
+    if (*head_ref == NULL) {
+        *head_ref = (struct order_line*) malloc(sizeof(struct order_line));
+        (*head_ref)->next = NULL;
+        (*head_ref)->data = NULL;
+    }
 }
 
 void clear_line(struct order_line** head_ref) {
-    struct order_line* current = *head_ref;
-    struct order_line* next;
+    struct order_line* temp;
 
-    while (current != NULL) {
-        if (current->next == NULL) {
-            current->data = NULL;
-            return;
-        }
-        next = current->next;
-        free(current);
-        current = next;
+    while (*head_ref != NULL) {
+        temp = *head_ref;
+        *head_ref = (*head_ref)->next;
+        free(temp);
     }
-
     *head_ref = NULL;
+    *head_ref = (struct order_line*) malloc(sizeof(struct order_line));
+    (*head_ref)->next = NULL;
+    (*head_ref)->data = NULL;
 }
 
 void sort_line(struct order_line** head_ref, struct status *s) {
@@ -74,24 +76,6 @@ void sort_line(struct order_line** head_ref, struct status *s) {
         }
         current = current->next;
     }
-    enum direction dir;
-    if (closest->data->dir == irrelevant) {
-        dir = ((closest->data->to_floor) - (s->current_floor)) < 0? down: up;
-    } else {
-        dir = closest->data->dir;
-    }
-    while (current != NULL) {
-        closest = current;
-        while (closest->next != NULL) {
-            if (closest->data->dir != dir) {
-                swap = closest->data;
-                closest->data = closest->next->data;
-                closest->next->data = swap;
-            }
-            closest = closest->next;
-        }
-        current = current->next;
-    } 
      
 }
 
