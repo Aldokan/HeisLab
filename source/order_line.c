@@ -63,11 +63,12 @@ void sort_line(struct order_line** head_ref, struct status *s) {
     struct order_line *current = *head_ref;
     struct order_line *closest = (struct order_line*) malloc(sizeof(struct order_line));
     struct order* swap;
-    //traverse linked list
+
     while (current != NULL) {
         closest = current;
         while (closest->next != NULL) {
-            if (abs((closest->data->to_floor) - (s->current_floor)) > abs((closest->next->data->to_floor) - (s->current_floor))) {
+            if (abs((closest->data->to_floor) - (s->current_floor)) > abs((closest->next->data->to_floor) - (s->current_floor))
+            && (closest->next->data->dir == 0 || closest->next->data->dir == s->last_direction)) {
                 swap = closest->data;
                 closest->data = closest->next->data;
                 closest->next->data = swap;

@@ -3,6 +3,7 @@
 void pretty_print_status(struct status* s) {
     printf("------------------------\n");
     printf("| Movement: %s \n", s->bool_movement? "true": "false");
+    printf("| Last direction: %s \n", s->last_direction < 0? "Down": "Up");
     printf("| Current floor: %d \n", s->current_floor);
     printf("| Floor indicators: ");
 

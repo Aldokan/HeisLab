@@ -41,9 +41,9 @@ void take_order(struct order_line** queue, struct status* s, struct order* ord) 
                     ord->to_floor = floor_nr;
                     ord->src = (btn_type == BUTTON_CAB? inside_elevator: outside_elevator);
                     if (ord->src == outside_elevator) {
-                        ord->dir = (btn_type == BUTTON_HALL_UP? up: down);
+                        ord->dir = (btn_type == BUTTON_HALL_UP? DIRN_UP: DIRN_DOWN);
                     } else {
-                        ord->dir = irrelevant;
+                        ord->dir = DIRN_STOP; // irrelevant
                     }
                     add_order(queue, ord, s);
                     s->button_status[btn_type][floor_nr] = 1;
