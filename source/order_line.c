@@ -85,7 +85,8 @@ void pretty_print_line(struct order_line** head_ref) {
     int i = 1;
     printf("--------------------------------------\n");
     for (current = *head_ref; current != NULL; current=(current->next)) {
-        printf("%d: To floor: %d    Source of order: %s\n", i, current->data->to_floor, (current->data->src == outside_elevator? "outside": "inside"));
+        printf("%d: To floor: %d    Source of order: %s    Direction: %s\n", i, current->data->to_floor, (current->data->src == outside_elevator? "outside": "inside"),
+        current->data->dir == DIRN_UP? "upwards": current->data->dir == DIRN_DOWN? "downwards": "irrelevant");
         i++;
     }
     printf("--------------------------------------\n");

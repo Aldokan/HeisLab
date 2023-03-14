@@ -43,7 +43,13 @@ void take_order(struct order_line** queue, struct status* s, struct order* ord) 
                     if (ord->src == outside_elevator) {
                         ord->dir = (btn_type == BUTTON_HALL_UP? DIRN_UP: DIRN_DOWN);
                     } else {
-                        ord->dir = DIRN_STOP; // irrelevant
+                        int diff = floor_nr - s->current_floor;
+                        if (diff == 0 && elevio_floorSensor() == -1) {
+                            ord->dir = -(s->last_direction);
+                        } else {
+                            ord->dir = (diff < 0)? DIRN_DOWN: DIRN_UP;
+                        }
+                        
                     }
                     add_order(queue, ord, s);
                     s->button_status[btn_type][floor_nr] = 1;
@@ -111,6 +117,7 @@ int main(){
         }
 
         if (elevio_stopButton()) {
+            c->arrival_timer = 0;
             c->stop_timer = 0;
             emergency_stop(&queue, c);
         }

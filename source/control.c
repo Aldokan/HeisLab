@@ -15,7 +15,7 @@ void move(struct control* c, MotorDirection d){
 
 void stop_in_floor(struct control* c){
     elevio_motorDirection(DIRN_STOP);
-    if (c->arrival_timer == 0) {
+    if (c->arrival_timer == 0 && !elevio_stopButton()) {
         start_timer(c, t_arrival);
     }
     c->status->bool_movement = 0;
